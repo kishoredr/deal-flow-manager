@@ -1,0 +1,541 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Sales Pipeline Tracker API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: deals
+    description: Deal management
+  - name: owners
+    description: Deal owner management
+  - name: pipeline
+    description: Pipeline summary and analytics
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /owners:
+    get:
+      operationId: listOwners
+      tags: [owners]
+      summary: List all deal owners
+      responses:
+        "200":
+          description: List of owners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Owner"
+    post:
+      operationId: createOwner
+      tags: [owners]
+      summary: Create a new deal owner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOwnerBody"
+      responses:
+        "201":
+          description: Created owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Owner"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /owners/{id}:
+    get:
+      operationId: getOwner
+      tags: [owners]
+      summary: Get a deal owner by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Owner"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateOwner
+      tags: [owners]
+      summary: Update a deal owner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOwnerBody"
+      responses:
+        "200":
+          description: Updated owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Owner"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteOwner
+      tags: [owners]
+      summary: Delete a deal owner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /deals:
+    get:
+      operationId: listDeals
+      tags: [deals]
+      summary: List all deals
+      parameters:
+        - name: stage
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/DealStage"
+        - name: ownerId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of deals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deal"
+    post:
+      operationId: createDeal
+      tags: [deals]
+      summary: Create a new deal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDealBody"
+      responses:
+        "201":
+          description: Created deal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deal"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /deals/{id}:
+    get:
+      operationId: getDeal
+      tags: [deals]
+      summary: Get a deal by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deal"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateDeal
+      tags: [deals]
+      summary: Update a deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDealBody"
+      responses:
+        "200":
+          description: Updated deal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deal"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteDeal
+      tags: [deals]
+      summary: Delete a deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pipeline/summary:
+    get:
+      operationId: getPipelineSummary
+      tags: [pipeline]
+      summary: Get pipeline summary statistics
+      responses:
+        "200":
+          description: Pipeline summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PipelineSummary"
+
+  /pipeline/by-stage:
+    get:
+      operationId: getDealsByStage
+      tags: [pipeline]
+      summary: Get deal counts and values grouped by stage
+      responses:
+        "200":
+          description: Deals by stage
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StageBreakdown"
+
+  /pipeline/by-owner:
+    get:
+      operationId: getDealsByOwner
+      tags: [pipeline]
+      summary: Get deal counts and values grouped by owner
+      responses:
+        "200":
+          description: Deals by owner
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OwnerBreakdown"
+
+  /pipeline/closing-soon:
+    get:
+      operationId: getClosingSoonDeals
+      tags: [pipeline]
+      summary: Get deals closing within the next 30 days
+      responses:
+        "200":
+          description: Deals closing soon
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deal"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    DealStage:
+      type: string
+      enum:
+        - lead
+        - qualified
+        - proposal
+        - negotiation
+        - closed_won
+        - closed_lost
+
+    Owner:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        avatarUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - avatarUrl
+        - createdAt
+
+    CreateOwnerBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        avatarUrl:
+          type: ["string", "null"]
+      required:
+        - name
+        - email
+
+    UpdateOwnerBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        avatarUrl:
+          type: ["string", "null"]
+
+    Deal:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        companyName:
+          type: string
+        stage:
+          $ref: "#/components/schemas/DealStage"
+        value:
+          type: number
+        expectedCloseDate:
+          type: string
+          format: date
+        ownerId:
+          type: integer
+        ownerName:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - companyName
+        - stage
+        - value
+        - expectedCloseDate
+        - ownerId
+        - ownerName
+        - notes
+        - createdAt
+        - updatedAt
+
+    CreateDealBody:
+      type: object
+      properties:
+        title:
+          type: string
+        companyName:
+          type: string
+        stage:
+          $ref: "#/components/schemas/DealStage"
+        value:
+          type: number
+        expectedCloseDate:
+          type: string
+          format: date
+        ownerId:
+          type: integer
+        notes:
+          type: ["string", "null"]
+      required:
+        - title
+        - companyName
+        - stage
+        - value
+        - expectedCloseDate
+        - ownerId
+
+    UpdateDealBody:
+      type: object
+      properties:
+        title:
+          type: string
+        companyName:
+          type: string
+        stage:
+          $ref: "#/components/schemas/DealStage"
+        value:
+          type: number
+        expectedCloseDate:
+          type: string
+          format: date
+        ownerId:
+          type: integer
+        notes:
+          type: ["string", "null"]
+
+    PipelineSummary:
+      type: object
+      properties:
+        totalDeals:
+          type: integer
+        totalValue:
+          type: number
+        wonValue:
+          type: number
+        lostValue:
+          type: number
+        activeDeals:
+          type: integer
+        activeValue:
+          type: number
+        avgDealValue:
+          type: number
+        winRate:
+          type: number
+      required:
+        - totalDeals
+        - totalValue
+        - wonValue
+        - lostValue
+        - activeDeals
+        - activeValue
+        - avgDealValue
+        - winRate
+
+    StageBreakdown:
+      type: object
+      properties:
+        stage:
+          $ref: "#/components/schemas/DealStage"
+        count:
+          type: integer
+        totalValue:
+          type: number
+      required:
+        - stage
+        - count
+        - totalValue
+
+    OwnerBreakdown:
+      type: object
+      properties:
+        ownerId:
+          type: integer
+        ownerName:
+          type: string
+        count:
+          type: integer
+        totalValue:
+          type: number
+      required:
+        - ownerId
+        - ownerName
+        - count
+        - totalValue
